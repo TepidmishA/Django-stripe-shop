@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Buy {{ item.name }}</title>
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <body>
+    <h1>{{ item.name }}</h1>
+    <p>{{ item.description }}</p>
+    <p>Price: {{ item.price }} USD</p>
+    <button id="buy-button">Buy</button>
+
+    <script type="text/javascript">
+      var stripe = Stripe('{{ STRIPE_PUBLISHABLE_KEY }}');
+      var buyButton = document.getElementById('buy-button');
+
+      buyButton.addEventListener('click', function () {
+        fetch("{% url 'store:buy' item.id %}", { method: "GET" })
+          .then(response => response.json())
+          .then(function (session) {
+            if(session.error) {
+              alert("Error: " + session.error);
+            } else {
+              return stripe.redirectToCheckout({ sessionId: session.id });
+            }
+          })
+
+          .then(function (result) {
+            if (result && result.error) {
+              alert(result.error.message);
+            }
+          })
+          .catch(function (error) {
+            console.error("Error fetching session:", error);
+          });
+      });
+    </script>
+  </body>
+</html>
