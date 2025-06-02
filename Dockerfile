@@ -13,10 +13,6 @@ COPY . .
 # Открываем порт
 EXPOSE 8000
 
-# Собираем статику и применяем миграции
-RUN python manage.py collectstatic --noinput
-RUN python manage.py migrate --noinput
-
 # Переменные окружения для суперпользователя
 ENV DJANGO_SUPERUSER_USERNAME=shop_admin
 ENV DJANGO_SUPERUSER_PASSWORD=shop_admin_password
