@@ -14,11 +14,13 @@ COPY . .
 EXPOSE 8000
 
 # Переменные окружения для суперпользователя
-ENV DJANGO_SUPERUSER_USERNAME=shop_admin
+ENV DJANGO_SUPERUSER_USERNAME=shop_admin_aaa
 ENV DJANGO_SUPERUSER_PASSWORD=shop_admin_password
 ENV DJANGO_SUPERUSER_EMAIL=admin@example.com
 
 # Создаём суперпользователя (если его нет)
-RUN python manage.py createsuperuser --noinput || true
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
