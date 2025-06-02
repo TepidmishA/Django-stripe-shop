@@ -13,8 +13,16 @@ COPY . .
 # Открываем порт
 EXPOSE 8000
 
-# Выполнить миграции и сбор статики при запуске
-CMD sh -c "python manage.py makemigrations --noinput && \
-           python manage.py migrate --noinput && \
-           python manage.py collectstatic --noinput && \
-           python manage.py runserver 0.0.0.0:8000"
+# Собираем статику и применяем миграции
+RUN python manage.py collectstatic --noinput
+RUN python manage.py migrate --noinput
+
+# Переменные окружения для суперпользователя
+ENV DJANGO_SUPERUSER_USERNAME=shop_admin
+ENV DJANGO_SUPERUSER_PASSWORD=shop_admin_password
+ENV DJANGO_SUPERUSER_EMAIL=admin@example.com
+
+# Создаём суперпользователя (если его нет)
+RUN python manage.py createsuperuser --noinput || true
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
