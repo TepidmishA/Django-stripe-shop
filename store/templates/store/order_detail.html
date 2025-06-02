@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Order #{{ order.id }}</title>
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <body>
+    <h1>Order #{{ order.id }}</h1>
+
+    <h3>Items:</h3>
+    <ul>
+      {% for item in order.items.all %}
+        <li>{{ item.name }} — {{ item.price }} {{ item.currency|upper }}</li>
+      {% endfor %}
+    </ul>
+
+    <p>Subtotal: {{ order.subtotal }} {{ order.currency|upper }}</p>
+    <p>Discount: -{{ order.discount_amount }} {{ order.currency|upper }}</p>
+    <p>Tax: +{{ order.tax_amount|floatformat:2 }} {{ order.currency|upper }}</p>
+    <hr>
+    <h3>Total: {{ order.total_amount|floatformat:2 }} {{ order.currency|upper }}</h3>
+
+    <button id="pay-button">Pay</button>
+
+    <script type="text/javascript">
+      const stripe = Stripe('{{ publishable_key }}');
+
+      document.getElementById('pay-button').addEventListener('click', function () {
+        fetch("{% url 'store:create_checkout_session' order.id %}")
+          .then(response => response.json())
+          .then(data => {
+            if (data.session_id) {
+              stripe.redirectToCheckout({ sessionId: data.session_id });
+            } else {
+              alert("Error: " + data.error);
+            }
+          });
+      });
+    </script>
+  </body>
+</html>
