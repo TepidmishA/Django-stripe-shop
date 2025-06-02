@@ -80,20 +80,22 @@ def item_view(request, item_id):
     return render(request, 'store/single_item.html', context)
 
 
-def success_view():
+def success_view(request):
     """
     Returns a simple HTML page indicating a successful payment.
 
+    :param request: Django HttpRequest object.
     :return: HttpResponse with success message.
     """
     return HttpResponse("<html><body><h1>Payment successful!</h1>"
                         "<p>Thank you for your purchase.</p></body></html>")
 
 
-def cancel_view():
+def cancel_view(request):
     """
     Returns a simple HTML page indicating a canceled payment.
 
+    :param request: Django HttpRequest object.
     :return: HttpResponse with cancellation message.
     """
     return HttpResponse("<html><body><h1>Payment canceled.</h1>"
