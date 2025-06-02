@@ -37,20 +37,20 @@ class Item(models.Model):
 
 class Discount(models.Model):
     """
-    A fixed discount amount that can be attached to an Order.
+    A fixed discount percentage that can be attached to an Order.
 
     Fields:
         - code (str): A unique discount code, e.g., "SAVE10".
-        - amount (Decimal): Discount value in the same currency as the order (e.g., 10.00).
+        - percentage (Decimal): Discount value in the same currency as the order (e.g., 10.00).
     """
     code = models.CharField(max_length=50, unique=True)
-    amount = models.DecimalField(
+    percentage = models.DecimalField(
         max_digits=10,
         decimal_places=2
     )
 
     def __str__(self):
-        return f"{self.code} — {self.amount}"
+        return f"{self.code} — {self.percentage}"
 
 
 class Tax(models.Model):
@@ -112,7 +112,9 @@ class Order(models.Model):
         """
         Returns the discount amount. Returns 0 if no discount is applied.
         """
-        return self.discount.amount if self.discount else 0
+        base = self.subtotal()
+        amount = base * (self.discount.percentage / 100) if self.discount else 0
+        return round(amount, 2)
 
     def tax_amount(self):
         """
@@ -121,7 +123,8 @@ class Order(models.Model):
         Returns 0 if no tax is applied.
         """
         base = self.subtotal() - self.discount_amount()
-        return base * (self.tax.percentage / 100) if self.tax else 0
+        amount = base * (self.tax.percentage / 100) if self.tax else 0
+        return round(amount, 2)
 
     def total_amount(self):
         """
