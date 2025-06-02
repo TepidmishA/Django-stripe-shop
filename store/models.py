@@ -50,7 +50,7 @@ class Discount(models.Model):
     )
 
     def __str__(self):
-        return f"{self.code} — {self.percentage}"
+        return f"{self.code} — {self.percentage}%"
 
 
 class Tax(models.Model):
