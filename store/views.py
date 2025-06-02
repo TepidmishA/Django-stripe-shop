@@ -1,3 +1,20 @@
+"""
+Store Views Module
+
+Implements view functions for displaying item details and handling Stripe payments.
+
+Main Views:
+    - buy_view: Creates a Stripe Checkout session and returns the session ID.
+    - item_view: Renders a product detail page with Stripe publishable key.
+    - success_view: Simple HTML response for successful payment.
+    - cancel_view: Simple HTML response for canceled payment.
+
+Dependencies:
+    - Stripe API for payment integration
+    - Django shortcuts and HTTP utilities for request handling and rendering
+    - Local Item model
+"""
+
 import stripe
 from django.conf import settings
 from django.http import JsonResponse, Http404, HttpResponse
@@ -9,15 +26,18 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def buy_view(request, item_id):
     """
-    GET /buy/<item_id>/
+    Initiates a Stripe Checkout session for the specified item.
+
+    :param request: Django HttpRequest object (must be GET).
+    :param item_id: ID of the item to purchase.
+    :return: JSON response containing the Stripe Checkout session ID.
+    :raises Http404: If the request method is not GET or item does not exist.
     """
-    # Filter to only GET requests
     if request.method != 'GET':
         raise Http404()
 
     item = get_object_or_404(Item, pk=item_id)
 
-    # Create line_items for Stripe
     domain = request.build_absolute_uri('/')[:-1]
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -25,7 +45,7 @@ def buy_view(request, item_id):
             line_items=[{
                 'price_data': {
                     'currency': 'usd',
-                    'unit_amount': int(item.price * 100),
+                    'unit_amount': int(item.price * 100),   # cents
                     'product_data': {
                         'name': item.name,
                         'description': item.description,
@@ -45,7 +65,12 @@ def buy_view(request, item_id):
 
 def item_view(request, item_id):
     """
-    GET /item/<item_id>/
+    Renders a product detail page with the Stripe publishable key.
+
+    :param request: Django HttpRequest object.
+    :param item_id: ID of the item to display.
+    :return: Rendered HTML page with item details.
+    :raises Http404: If the item is not found.
     """
     item = get_object_or_404(Item, pk=item_id)
     context = {
@@ -55,9 +80,21 @@ def item_view(request, item_id):
     return render(request, 'store/single_item.html', context)
 
 
-def success_view(request):
-    return HttpResponse("<html><body><h1>Payment successful!</h1><p>Thank you for your purchase.</p></body></html>")
+def success_view():
+    """
+    Returns a simple HTML page indicating a successful payment.
+
+    :return: HttpResponse with success message.
+    """
+    return HttpResponse("<html><body><h1>Payment successful!</h1>"
+                        "<p>Thank you for your purchase.</p></body></html>")
 
 
-def cancel_view(request):
-    return HttpResponse("<html><body><h1>Payment canceled.</h1><p>Your payment was not completed.</p></body></html>")
+def cancel_view():
+    """
+    Returns a simple HTML page indicating a canceled payment.
+
+    :return: HttpResponse with cancellation message.
+    """
+    return HttpResponse("<html><body><h1>Payment canceled.</h1>"
+                        "<p>Your payment was not completed.</p></body></html>")

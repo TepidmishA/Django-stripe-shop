@@ -1,3 +1,9 @@
+"""
+URL Configuration Module
+
+Defines URL patterns for the 'store' app, mapping paths to view functions.
+"""
+
 from django.urls import path
 
 from . import views
