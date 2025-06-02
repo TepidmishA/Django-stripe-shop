@@ -44,7 +44,7 @@ def buy_view(request, item_id):
             payment_method_types=['card'],
             line_items=[{
                 'price_data': {
-                    'currency': 'usd',
+                    'currency': item.currency.lower(),
                     'unit_amount': int(item.price * 100),   # cents
                     'product_data': {
                         'name': item.name,

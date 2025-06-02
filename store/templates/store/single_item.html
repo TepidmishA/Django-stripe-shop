@@ -8,7 +8,7 @@
   <body>
     <h1>{{ item.name }}</h1>
     <p>{{ item.description }}</p>
-    <p>Price: {{ item.price }} USD</p>
+    <p>Price: {{ item.price }} {{ item.currency.upper }}</p>
     <button id="buy-button">Buy</button>
 
     <script type="text/javascript">
