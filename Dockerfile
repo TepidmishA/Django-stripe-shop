@@ -15,7 +15,12 @@ EXPOSE 8000
 
 # Создаём суперпользователя (если его нет)
 COPY entrypoint.sh /entrypoint.sh
+
+RUN apt-get update && apt-get install -y dos2unix && \
+    dos2unix /entrypoint.sh
+
 RUN chmod +x /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
