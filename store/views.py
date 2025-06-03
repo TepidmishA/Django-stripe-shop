@@ -27,8 +27,12 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 # single item views
 def item_payment_intent(request, item_id):
     """
-    Creates a Stripe PaymentIntent for a single Item and returns client_secret.
-    GET /store/item/<item_id>/intent/
+    Creates a Stripe PaymentIntent for a single item and returns the client secret.
+
+    :param request: Django HttpRequest object (must be GET).
+    :param item_id: ID of the item to create a PaymentIntent for.
+    :return: JSON response containing the Stripe PaymentIntent client_secret.
+    :raises Http404: If the request method is not GET or the item does not exist.
     """
     if request.method != "GET":
         raise Http404()
@@ -114,8 +118,12 @@ def item_view(request, item_id):
 # order views
 def order_detail_view(request, order_id):
     """
-    GET /store/order/<order_id>/
-    Renders the page showing details of the Order and Payment Element.
+    Renders the order detail page with Payment Element and Stripe publishable key.
+
+    :param request: Django HttpRequest object.
+    :param order_id: ID of the order to display.
+    :return: Rendered HTML page with order details and payment options.
+    :raises Http404: If the order does not exist.
     """
     order = get_object_or_404(Order, pk=order_id)
 
@@ -199,7 +207,7 @@ def create_checkout_session(request, order_id):
 def create_payment_intent(request, order_id):
     """
     Creates a Stripe PaymentIntent for the given Order and returns client_secret.
-    GET /store/order/<order_id>/create-payment-intent/
+    GET /order/<order_id>/create-payment-intent/
     """
     if request.method != "GET":
         raise Http404()
