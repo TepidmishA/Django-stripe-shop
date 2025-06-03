@@ -67,3 +67,21 @@
 расчёт стоимости с учётом скидки/налога и встроенная оплата через Stripe Payment Intent
 (или редирект на Stripe Checkout при выборе соответствующего режима).
 
+## Быстрый старт (с Docker Compose)
+1. Клонирование репозитория
+  ```bash
+  git clone https://github.com/TepidmishA/Django-stripe-shop.git
+  cd Django-stripe-shop
+  ```
+2. Создание файла `.env` с переменными окружения
+- В корне проекта уже есть файл `.env.example` с шаблоном.
+- Скопируйте его в новый файл `.env`:
+  ```bash
+  cp .env.example .env
+  ```
+- Откройте `.env` и заполните значения переменных.
+
+3. Сборка и запуск через Docker Compose
+```bash
+docker-compose up --build
+```
