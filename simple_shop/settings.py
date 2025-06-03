@@ -81,12 +81,14 @@ WSGI_APPLICATION = 'simple_shop.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL")
-    )
-}
-
+DATABASES = {}
+if dj_database_url.config(default=os.environ.get("DATABASE_URL")):
+    DATABASES['default'] = dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+else:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase',
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -133,5 +135,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
-
-DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'))

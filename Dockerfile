@@ -13,11 +13,6 @@ COPY . .
 # Открываем порт
 EXPOSE 8000
 
-# Переменные окружения для суперпользователя
-ENV DJANGO_SUPERUSER_USERNAME=shop_admin_aaa
-ENV DJANGO_SUPERUSER_PASSWORD=shop_admin_password
-ENV DJANGO_SUPERUSER_EMAIL=admin@example.com
-
 # Создаём суперпользователя (если его нет)
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
