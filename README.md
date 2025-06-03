@@ -68,26 +68,29 @@
 (или редирект на Stripe Checkout при выборе соответствующего режима).
 
 ## Быстрый старт (с Docker Compose)
+Все команды выполняются в PowerShell (Windows).
+
 1. Клонирование репозитория
   ```bash
   git clone https://github.com/TepidmishA/Django-stripe-shop.git
   cd Django-stripe-shop
   ```
 2. Создание файла `.env` с переменными окружения
-- В корне проекта уже есть файл `.env.example` с шаблоном.
+- В корне проекта уже есть файл `.env.example` - шаблон конфигурации.
 - Скопируйте его в новый файл `.env`:
   ```bash
-  cp .env.example .env
+  copy .env.example .env
   ```
-- Откройте `.env` и заполните значения переменных.
+- Откройте `.env` и заполните значения переменных окружения.
 
 3. Сборка и запуск через Docker Compose
   ```bash
   docker-compose up --build
   ```
+При локальном запуске приложение будет доступно по адресу: http://localhost:8000/
 
 ## Быстрый старт (без Docker Compose)
-Все команды выполняются в PowerShell (Windows)
+Все команды выполняются в PowerShell (Windows).
 
 1. Клонирование репозитория
   ```bash
@@ -107,10 +110,10 @@ pip install -r requirements.txt
 
 # Copy environment variables example and configure them
 copy .env.example .env
-# Open .env and fill in required values like STRIPE_API_KEY, DATABASE_URL, DEBUG etc.
 ```
+- Откройте `.env` и заполните значения переменных окружения.
 
-3. Применение миграции и запуск сервера
+3. Применение миграций и запуск сервера
 ```bash
 # Apply database migrations
 python manage.py makemigrations
@@ -122,4 +125,4 @@ python manage.py collectstatic --noinput
 # Run the server
 python manage.py runserver
 ```
-Приложение будет доступно по адресу: http://localhost:8000/
+При локальном запуске приложение будет доступно по адресу: http://localhost:8000/
