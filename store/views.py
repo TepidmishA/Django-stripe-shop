@@ -24,6 +24,32 @@ from .models import Item, Order
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
+# single item views
+def item_payment_intent(request, item_id):
+    """
+    Creates a Stripe PaymentIntent for a single Item and returns client_secret.
+    GET /store/item/<item_id>/intent/
+    """
+    if request.method != "GET":
+        raise Http404()
+
+    item = get_object_or_404(Item, pk=item_id)
+
+    amount = int(item.price * 100)  # cents
+    currency = item.currency.lower()
+
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency=currency,
+            metadata={"item_id": str(item.id)},
+        )
+    except stripe.error.StripeError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"client_secret": intent.client_secret})
+
+
 def buy_view(request, item_id):
     """
     Initiates a Stripe Checkout session for the specified item.
@@ -77,31 +103,15 @@ def item_view(request, item_id):
         'item': item,
         'STRIPE_PUBLISHABLE_KEY': settings.STRIPE_PUBLISHABLE_KEY,
     }
-    return render(request, 'store/single_item.html', context)
+
+    if settings.STRIPE_USE_PAYMENT_INTENT == 'True':
+        url = 'store/single_item_intent.html'
+    else:
+        url = 'store/single_item.html'
+    return render(request, url, context)
 
 
-def success_view(request):
-    """
-    Returns a simple HTML page indicating a successful payment.
-
-    :param request: Django HttpRequest object.
-    :return: HttpResponse with success message.
-    """
-    return HttpResponse("<html><body><h1>Payment successful!</h1>"
-                        "<p>Thank you for your purchase.</p></body></html>")
-
-
-def cancel_view(request):
-    """
-    Returns a simple HTML page indicating a canceled payment.
-
-    :param request: Django HttpRequest object.
-    :return: HttpResponse with cancellation message.
-    """
-    return HttpResponse("<html><body><h1>Payment canceled.</h1>"
-                        "<p>Your payment was not completed.</p></body></html>")
-
-
+# order views
 def order_detail_view(request, order_id):
     """
     GET /store/order/<order_id>/
@@ -114,7 +124,12 @@ def order_detail_view(request, order_id):
         'publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
     }
 
-    return render(request, 'store/order_detail.html', context)
+    if settings.STRIPE_USE_PAYMENT_INTENT == 'True':
+        url = 'store/order_detail_intent.html'
+    else:
+        url = 'store/order_detail.html'
+
+    return render(request, url, context)
 
 
 def create_checkout_session(request, order_id):
@@ -179,3 +194,52 @@ def create_checkout_session(request, order_id):
         return JsonResponse({'session_id': session.id})
     except stripe.error.StripeError as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+
+def create_payment_intent(request, order_id):
+    """
+    Creates a Stripe PaymentIntent for the given Order and returns client_secret.
+    GET /store/order/<order_id>/create-payment-intent/
+    """
+    if request.method != "GET":
+        raise Http404()
+
+    order = get_object_or_404(Order, pk=order_id)
+
+    total_decimal = order.total_amount()
+    amount = int(total_decimal * 100)   # cents
+    currency = order.currency()
+
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency=currency,
+            metadata={"order_id": str(order.id)},
+        )
+    except stripe.error.StripeError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"client_secret": intent.client_secret})
+
+
+# status view
+def success_view(request):
+    """
+    Returns a simple HTML page indicating a successful payment.
+
+    :param request: Django HttpRequest object.
+    :return: HttpResponse with success message.
+    """
+    return HttpResponse("<html><body><h1>Payment successful!</h1>"
+                        "<p>Thank you for your purchase.</p></body></html>")
+
+
+def cancel_view(request):
+    """
+    Returns a simple HTML page indicating a canceled payment.
+
+    :param request: Django HttpRequest object.
+    :return: HttpResponse with cancellation message.
+    """
+    return HttpResponse("<html><body><h1>Payment canceled.</h1>"
+                        "<p>Your payment was not completed.</p></body></html>")

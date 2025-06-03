@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Order #{{ order.id }}</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+      #card-element {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 400px;
+        padding: 10px 12px;
+        border: 1px solid #ccd0d2;
+        border-radius: 4px;
+        background-color: white;
+        margin-bottom: 20px;
+      }
+      #card-error {
+        color: red;
+      }
+      #payment-message {
+        color: green;
+        font-weight: bold;
+      }
+      #payment-form {
+        display: none;
+        max-width: 420px;
+        margin-top: 20px;
+      }
+      #pay-button {
+        padding: 10px 20px;
+        background-color: #6772e5;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Order #{{ order.id }}</h1>
+
+    <h3>Items:</h3>
+    <ul>
+      {% for item in order.items.all %}
+        <li>{{ item.name }} — {{ item.price }} {{ item.currency|upper }}</li>
+      {% endfor %}
+    </ul>
+
+    <p>Subtotal: {{ order.subtotal }} {{ order.currency|upper }}</p>
+    <p>Discount: -{{ order.discount_amount }} {{ order.currency|upper }}</p>
+    <p>Tax: +{{ order.tax_amount|floatformat:2 }} {{ order.currency|upper }}</p>
+    <hr />
+    <h3>Total: {{ order.total_amount|floatformat:2 }} {{ order.currency|upper }}</h3>
+
+    <!-- Button to create PaymentIntent -->
+    <button id="pay-button">
+      Pay {{ order.total_amount|floatformat:2 }} {{ order.currency|upper }}
+    </button>
+
+    <!-- Hidden payment form -->
+    <form id="payment-form">
+      <div id="card-element"><!-- Stripe Element here --></div>
+      <button
+        type="submit"
+        style="padding:10px 20px; background:#3ECF8E; color:white; border:none; border-radius:4px; cursor:pointer;"
+      >
+        Submit Payment
+      </button>
+      <div id="card-error" role="alert"></div>
+      <div id="payment-message"></div>
+    </form>
+
+    <script type="text/javascript">
+      document.addEventListener("DOMContentLoaded", async function () {
+        // Initialize Stripe.js with publishable key
+        const stripe = Stripe("{{ publishable_key }}");
+
+        const payButton = document.getElementById("pay-button");
+        const form = document.getElementById("payment-form");
+        const cardError = document.getElementById("card-error");
+        const paymentMessage = document.getElementById("payment-message");
+
+        payButton.addEventListener("click", async function () {
+          // 1) Create PaymentIntent on backend
+          const res = await fetch(
+            "{% url 'store:create_payment_intent' order.id %}",
+            { method: "GET" }
+          );
+          const data = await res.json();
+
+          if (data.error) {
+            cardError.textContent = data.error;
+            return;
+          }
+
+          const clientSecret = data.client_secret;
+
+          // 2) Initialize Stripe Elements with clientSecret
+          const elements = stripe.elements({ clientSecret });
+          const appearance = { theme: "stripe" };
+          const paymentElement = elements.create("payment", {
+            appearance,
+          });
+          paymentElement.mount("#card-element");
+
+          // 3) Hide Pay button, show payment form
+          payButton.style.display = "none";
+          form.style.display = "block";
+
+          // 4) Handle form submission
+          form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            cardError.textContent = "";
+            paymentMessage.textContent = "";
+
+            const { error, paymentIntent } =
+              await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                  return_url:
+                    window.location.origin +
+                    "{% url 'store:success' %}",
+                },
+              });
+
+            if (error) {
+              cardError.textContent = error.message;
+            } else if (
+              paymentIntent &&
+              paymentIntent.status === "succeeded"
+            ) {
+              paymentMessage.textContent = "Payment successful!";
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
