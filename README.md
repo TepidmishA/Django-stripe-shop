@@ -82,6 +82,44 @@
 - Откройте `.env` и заполните значения переменных.
 
 3. Сборка и запуск через Docker Compose
+  ```bash
+  docker-compose up --build
+  ```
+
+## Быстрый старт (без Docker Compose)
+Все команды выполняются в PowerShell (Windows)
+
+1. Клонирование репозитория
+  ```bash
+  git clone https://github.com/TepidmishA/Django-stripe-shop.git
+  cd Django-stripe-shop
+  ```
+
+2. Настройка виртуального окружения и установка зависимостей
 ```bash
-docker-compose up --build
+# Create and activate a virtual environment (for Windows PowerShell)
+python -m venv .venv
+.venv\Scripts\activate
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Copy environment variables example and configure them
+copy .env.example .env
+# Open .env and fill in required values like STRIPE_API_KEY, DATABASE_URL, DEBUG etc.
 ```
+
+3. Применение миграции и запуск сервера
+```bash
+# Apply database migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Collect static files
+python manage.py collectstatic --noinput
+
+# Run the server
+python manage.py runserver
+```
+Приложение будет доступно по адресу: http://localhost:8000/
